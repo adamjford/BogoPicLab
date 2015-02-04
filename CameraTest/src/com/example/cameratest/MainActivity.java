@@ -16,15 +16,20 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
+	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
 
-	Uri imageFileUri;
+	private Uri imageFileUri;
+	private ImageButton button;
+	private TextView tv;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		ImageButton button = (ImageButton) findViewById(R.id.TakeAPhoto);
+		button = (ImageButton) findViewById(R.id.TakeAPhoto);
+		tv = (TextView) findViewById(R.id.status);
+		
 		OnClickListener listener = new OnClickListener() {
 			public void onClick(View v) {
 				takeAPhoto();
@@ -39,18 +44,8 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
-	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
 
 	public void takeAPhoto() {
-		// TODO: Create an intent with the action
-		// MediaStore.ACTION_IMAGE_CAPTURE
-		
-		// ComponentName cn = new ComponentName("es.softwareprocess.bogopicgen",
-		// "es.softwareprocess.bogopicgen.BogoPicGenActivity");
-		// ComponentName cn = new ComponentName("com.android.camera",
-		// "com.android.camera.Camera");
-		// intent.setComponent(cn);
-
 		// Create a folder to store pictures
 		String folder = Environment.getExternalStorageDirectory()
 				.getAbsolutePath() + "/tmp";
@@ -58,30 +53,30 @@ public class MainActivity extends Activity {
 		if (!folderF.exists()) {
 			folderF.mkdir();
 		}
+		
+		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
 		// Create an URI for the picture file
 		String imageFilePath = folder + "/"
 				+ String.valueOf(System.currentTimeMillis()) + ".jpg";
 		File imageFile = new File(imageFilePath);
 		imageFileUri = Uri.fromFile(imageFile);
-
-		// TODO: Put in the intent in the tag MediaStore.EXTRA_OUTPUT the URI
 		
-		// TODO: Start the activity (expecting a result), with the code
-		// CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);
+        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
 		
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		// TODO: Handle the results from CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE
-		
-		// TODO: Handle the cases for RESULT_OK, RESULT_CANCELLED, and others
-		
-		// When the result is OK, set text "Photo OK!" in the status
-		//		and set the image in the Button with:
-		//		button.setImageDrawable(Drawable.createFromPath(imageFileUri.getPath()));
-		// When the result is CANCELLED, set text "Photo canceled" in the status
-		// Otherwise, set text "Not sure what happened!" with the resultCode
-		
+        if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                tv.setText("Photo OK!");
+                button.setImageDrawable(Drawable.createFromPath(imageFileUri.getPath()));
+            } else if (resultCode == RESULT_CANCELED) {
+                tv.setText("Photo canceled");
+            } else {
+                tv.setText("Not sure what happened!" + resultCode);
+            }
+        }
 	}
 }
